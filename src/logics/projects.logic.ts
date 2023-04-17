@@ -96,17 +96,18 @@ const deleteProject = async (request: Request, response: Response): Promise<Resp
     return response.status(204).json(queryResult.rows[0]);
 };
 
-const creteTechToProject = async (request: Request, response: Response): Promise<Response | void> => {
+const createTechToProject = async (request: Request, response: Response): Promise<Response | void> => {
     const technologyId: number = parseInt(response.locals.tech);
+    const techData = request.body;
     const projectId: number = parseInt(request.params.id);
-    const addedIn: Date = new Date()
+    const addedIn: Date = new Date();
     console.log(addedIn);
     const data: TTech = {
         technologyId,
         projectId,
-        addedIn
+        addedIn,
     };
-    const queryString: string = format(
+    const queryStringTech: string = format(
         `
         INSERT INTO
             projects_technologies(%I)
@@ -116,8 +117,36 @@ const creteTechToProject = async (request: Request, response: Response): Promise
         Object.keys(data),
         Object.values(data)
     );
-    const queryResult: QueryResult = await client.query(queryString);
+    const queryStringData: string = format(
+        `
+        SELECT
+            projects_technologies."technologyId",
+            technologies."name",
+            projects."id" projectId,
+            projects."name" projectName,
+            projects."description" projectDescription,
+            projects."estimatedTime" projectEstimatedTime,
+            projects."repository" projectRepository,
+            projects."startDate" projectStartDate,
+            projects."endDate" projectEndDate
+        FROM
+            projects
+        LEFT JOIN
+            projects_technologies ON projects."id" = projects_technologies."projectId"
+        INNER JOIN
+            technologies ON projects_technologies."technologyId" = technologies."id"
+        WHERE
+            projects."id" = $1;
+        `,
+        Object.keys(projectId),
+        Object.values(projectId)
+    );
+    const queryConfig: QueryConfig = {
+        text: queryStringData,
+        values: [projectId],
+    };
+    const queryResult: QueryResult = await client.query(queryConfig);
     return response.status(201).json(queryResult.rows[0]);
 };
 
-export { createProject, getProjectById, getAllProjects, updateProjectInfo, deleteProject, creteTechToProject };
+export { createProject, getProjectById, getAllProjects, updateProjectInfo, deleteProject, createTechToProject };

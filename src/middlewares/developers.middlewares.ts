@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { QueryConfig, QueryResult } from "pg";
-import { TDevelopers } from "../interfaces/developers.interface";
+import { TDevelopers, TDevelopersInfo } from "../interfaces/developers.interface";
 import { client } from "../database";
+import format from "pg-format";
 
 const ensureDeveloperExistsMiddleware = async (request: Request, response: Response, next: NextFunction): Promise<Response | void> => {
     let id = parseInt(request.params.id);
@@ -52,4 +53,34 @@ const ensureEmailIsNew = async (request: Request, response: Response, next: Next
     return next();
 };
 
-export { ensureDeveloperExistsMiddleware, ensureEmailIsNew };
+const ensureInfoDoenstExist = async (request: Request, response: Response, next: NextFunction): Promise<Response | void> => {
+    const id = request.params.id;
+    const infoData = request.body;
+    const queryString: string = format(
+        `
+        SELECT
+            developer_infos."developerSince"
+        FROM 
+            developers
+        LEFT JOIN
+            developer_infos ON developers."id" = developer_infos."developerId"
+        WHERE
+            developers."id" = $1;
+        `,
+        Object.keys(infoData),
+        Object.values(infoData)
+    );
+    const queryConfig: QueryConfig = {
+        text: queryString,
+        values: [id],
+    };
+    const queryResult: QueryResult = await client.query(queryConfig);
+    if (queryResult.rows[0].developerSince === null) {
+        return next();
+    }
+    return response.status(409).json({
+        message: "Developer infos already exists.",
+    });
+};
+
+export { ensureDeveloperExistsMiddleware, ensureEmailIsNew, ensureInfoDoenstExist };

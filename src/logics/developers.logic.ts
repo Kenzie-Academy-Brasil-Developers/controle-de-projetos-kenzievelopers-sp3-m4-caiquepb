@@ -25,11 +25,11 @@ const getDeveloperById = async (request: Request, response: Response): Promise<R
     const id = parseInt(request.params.id);
     const queryString: string = `
         SELECT
-            developers."id",
-            developers."name",
-            developers."email",
-            developer_infos."developerSince",
-            developer_infos."preferredOS"
+            developers."id" developerId,
+            developers."name" developerName,
+            developers."email" developerEmail,
+            developer_infos."developerSince" developerInfoDeveloperSince,
+            developer_infos."preferredOS" developerInfoPreferredOS
         FROM 
             developers
         LEFT JOIN

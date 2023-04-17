@@ -26,7 +26,7 @@ const ensureProjectExistsMiddleware = async (request: Request, response: Respons
     return next();
 };
 
-const ensureTecExistsMiddleware = async (request: Request, response: Response, next: NextFunction): Promise<Response | void> => {
+const ensureTechExistsMiddleware = async (request: Request, response: Response, next: NextFunction): Promise<Response | void> => {
     const techData: TTechRequest = request.body;
     let techCheck = false;
     const queryString: string = `
@@ -50,4 +50,4 @@ const ensureTecExistsMiddleware = async (request: Request, response: Response, n
     });
 };
 
-export { ensureProjectExistsMiddleware, ensureTecExistsMiddleware };
+export { ensureProjectExistsMiddleware, ensureTechExistsMiddleware };
